@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: blog_php
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - blog-net
+
+  db:
+    image: mysql:8.0
+    container_name: blog_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/s.sql:/docker-entrypoint-initdb.d/1.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/2.sql:ro
+      - db_data:/var/lib/mysql
+    networks:
+      - blog-net
+
+volumes:
+  db_data:
+
+networks:
+  blog-net:
+    driver: bridge
